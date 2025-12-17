@@ -1,88 +1,185 @@
 # Data Distillery
 
-Data Distillery is a **local-first** suite of tools for turning large personal data exports
-(Google Takeout, Gmail, ChatGPT archives) into **human-readable** insight.
+**Data Distillery** is a local-first suite of tools for turning large personal data exports  
+(Google Takeout, Gmail, ChatGPT archives) into **human-readable insight**.
 
-Most people can download their data.
-Very few can do anything meaningful with it.
+Most people can download their data.  
+Very few can *do anything meaningful with it*.
 
 This project exists to close that gap.
+
+---
 
 ## Why this exists
 
 Modern platforms will happily give you “your data” — but what you get back is usually:
 
 - enormous files
-
 - obscure formats
-
 - thousands of rows with no narrative
-
 - data that is technically complete but practically unusable
 
-## Data Distillery focuses on:
+**Data Distillery** focuses on:
 
 - reducing overwhelming datasets into something readable
-
 - segmenting large volumes into meaningful slices
-
 - surfacing patterns over time, not just raw logs
+- keeping everything **on your own computer**
 
-- keeping everything on your own computer
-
-There is no upload, no cloud, and no tracking.
+There is **no upload**, **no cloud**, and **no tracking**.  
 If your data feels too personal to hand to a web app, this toolkit is for you.
 
-This folder is meant to be downloaded and run **100% locally** on the user’s computer. The apps process files the user selects (e.g., Gmail Takeout `.mbox`, Google Takeout JSON/HTML), and **nothing is uploaded anywhere** unless the user explicitly does so.
+---
 
-## Quick start (Windows)
+## What’s included
 
-1) Install **Python 3.12+** from python.org (if you don’t already have it).
-2) Unzip this project.
-3) Double-click **RUN_ME.bat**.
+Data Distillery is a **suite**, not a single app. Current tools include:
 
-It will:
-- create a `.venv` virtual environment (first run only)
-- install dependencies from `requirements.txt`
-- let you choose which app to run
+### Inbox Archeology
+Analyze a Gmail Takeout `.mbox` file to explore:
 
-## Apps included
+- long-term email relationships
+- frequency and balance of communication
+- timeline patterns across years
 
-The batch menu assumes these files exist:
+### Search History Analyzer
+Explore Google Search history exports to see:
 
-- `apps/inbox_archeology_app.py`
-- `apps/inboxGPT_app.py`
-- `apps/category_viewer.py`
-- `apps/mbox_viewer_streamlit.py`
-- `apps/search_history_app.py`
-- `apps/wordlab_streamlit_app.py`
+- how search behavior changes over time
+- recurring topics and bursts
+- long-term patterns you don’t notice day-to-day
 
-If you rename apps, update `RUN_ME.bat` accordingly.
+### InboxGPT / Chat tools
+Explore ChatGPT conversation exports and chat logs in a structured way:
 
-## Privacy / safety note
+- browse conversations
+- segment by time or topic
+- move beyond scrolling through raw JSON
 
-These tools are designed to run locally. Users should avoid sharing exported Takeout data with others.  
-If you ship demo data, ensure it is **fully anonymized** and does not include private messages, email addresses, or identifiers.
+### Offline HTML tools
+Standalone viewers that run directly in your browser:
 
-## Troubleshooting
+- no Python required
+- no installation
+- useful as quick inspection tools
 
-### “Python was not found”
-- Install Python from python.org
-- Reopen the terminal
-- Run: `python --version`
+---
 
-### ModuleNotFoundError / missing packages
-- Run `RUN_ME.bat` again (it installs dependencies).
-- Or manually:
-  - `.\.venv\Scripts\activate`
-  - `pip install -r requirements.txt`
+## What you need before starting
 
-### Streamlit opens but app can’t import your package
-- Ensure your app adds project root to `sys.path` (you already did this in `inbox_archeology_app.py`).
-- Ensure `inbox_archeology/__init__.py` exists.
+Data Distillery does **not** collect data for you.  
+You provide your own exports.
 
-## Developer notes
+### 1. Python (required)
 
-Re-freeze dependencies (maintainer only):
-1) Activate venv: `.\.venv\Scripts\activate`
-2) `pip freeze > requirements.txt`
+- Install **Python 3.11 or newer** from: https://www.python.org
+- During installation, **check “Add Python to PATH”**
+
+You only need to do this once.
+
+---
+
+### 2. Your exported data
+
+#### Google Takeout (Gmail, Search History, etc.)
+
+1. Go to: https://takeout.google.com
+2. Select the products you want (e.g. Gmail, Search)
+3. Export and download the ZIP
+4. Extract it somewhere on your computer
+
+For Gmail analysis, you will need the `.mbox` file  
+(often named **`All Mail.mbox`**).
+
+---
+
+#### ChatGPT data
+
+1. In ChatGPT, go to **Settings → Data Controls**
+2. Request a data export
+3. Download and unzip the archive
+
+Different tools in the suite support different parts of this export.
+
+---
+
+## How to run Data Distillery
+
+1. Download or clone this repository
+2. Unzip it anywhere on your computer
+3. Double-click **`RUN_ME.bat`** (Windows)
+
+What happens next:
+
+- a local Python environment is created
+- required libraries are installed
+- a browser window opens with the **Data Distillery home screen**
+
+From there, you choose which tool to run.
+
+Everything runs on `localhost`.  
+Nothing is uploaded anywhere.
+
+---
+
+## Privacy & safety notes (important)
+
+- All processing happens **locally on your machine**
+- Your data never leaves your computer
+- No telemetry, analytics, or background network calls
+- Output files are written only to local folders
+
+That said:
+
+- your data may include very personal material
+- be mindful of where you store exports and outputs
+- do not share generated files unless you intend to
+
+---
+
+## Reporting bugs or problems
+
+This project is early and real-world data is messy.  
+If something breaks, that’s useful information.
+
+### Please report:
+
+- error messages or stack traces
+- which tool you were running
+- what type of data you uploaded (e.g. Gmail `.mbox`)
+- your operating system (Windows / macOS / Linux)
+
+### How to report
+
+- Open an issue on GitHub:  
+  https://github.com/monapdx/data-distillery/issues
+- Or message the repo owner directly if this was shared privately
+
+You do **not** need to share your actual data to report a bug.
+
+---
+
+## Project status
+
+- Early release (v0.1)
+- Focused on correctness and local reliability
+- Expect rough edges and iteration
+
+This is not a polished consumer product — yet.  
+It’s a serious attempt to make personal data *legible*.
+
+---
+
+## Philosophy
+
+Data Distillery is not about surveillance, productivity hacking, or optimization.
+
+It’s about:
+
+- understanding your own history
+- seeing patterns that are otherwise invisible
+- reclaiming data that already exists about you
+
+If you’ve ever downloaded your data and felt overwhelmed or disappointed,  
+this project was built for that feeling.
+
