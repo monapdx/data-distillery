@@ -1,4 +1,4 @@
-# Streamlit Takeout Toolkit (Local-first)
+# Data Distillery (Local-first)
 
 This folder is meant to be downloaded and run **100% locally** on the user’s computer. The apps process files the user selects (e.g., Gmail Takeout `.mbox`, Google Takeout JSON/HTML), and **nothing is uploaded anywhere** unless the user explicitly does so.
 
@@ -13,7 +13,7 @@ It will:
 - install dependencies from `requirements.txt`
 - let you choose which app to run
 
-## Apps included (edit as needed)
+## Apps included
 
 The batch menu assumes these files exist:
 
