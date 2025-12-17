@@ -1,4 +1,37 @@
-# Data Distillery (Local-first)
+# Data Distillery
+
+Data Distillery is a **local-first** suite of tools for turning large personal data exports
+(Google Takeout, Gmail, ChatGPT archives) into **human-readable** insight.
+
+Most people can download their data.
+Very few can do anything meaningful with it.
+
+This project exists to close that gap.
+
+## Why this exists
+
+Modern platforms will happily give you “your data” — but what you get back is usually:
+
+- enormous files
+
+- obscure formats
+
+- thousands of rows with no narrative
+
+- data that is technically complete but practically unusable
+
+## Data Distillery focuses on:
+
+- reducing overwhelming datasets into something readable
+
+- segmenting large volumes into meaningful slices
+
+- surfacing patterns over time, not just raw logs
+
+- keeping everything on your own computer
+
+There is no upload, no cloud, and no tracking.
+If your data feels too personal to hand to a web app, this toolkit is for you.
 
 This folder is meant to be downloaded and run **100% locally** on the user’s computer. The apps process files the user selects (e.g., Gmail Takeout `.mbox`, Google Takeout JSON/HTML), and **nothing is uploaded anywhere** unless the user explicitly does so.
 
