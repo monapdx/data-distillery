@@ -1,19 +1,32 @@
+# apps/inboxGPT_app.py
+from __future__ import annotations
+
+import hashlib
+import json
+import sqlite3
+import sys
+from datetime import datetime
+from pathlib import Path
+from typing import Any, Callable, Dict, List, Optional
 
 import streamlit as st
-import sqlite3
-import json
-import hashlib
-from typing import List, Dict, Any, Optional
-from datetime import datetime
 
-DB_PATH = "chat_categorizer.db"
+# NOTE: Do NOT call st.set_page_config() here (suite_home owns it)
+
+PROJECT_ROOT = Path(__file__).resolve().parents[1]
+if str(PROJECT_ROOT) not in sys.path:
+    sys.path.insert(0, str(PROJECT_ROOT))
+
+DB_PATH = str((PROJECT_ROOT / "chat_categorizer.db").resolve())
 
 # ---------- DB LAYER ----------
+
 
 def get_conn():
     conn = sqlite3.connect(DB_PATH, check_same_thread=False)
     conn.execute("PRAGMA foreign_keys = ON;")
     return conn
+
 
 def init_db():
     conn = get_conn()
@@ -42,6 +55,7 @@ def init_db():
     conn.commit()
     conn.close()
 
+
 def upsert_chat(chat: Dict[str, Any]):
     conn = get_conn()
     conn.execute(
@@ -58,6 +72,7 @@ def upsert_chat(chat: Dict[str, Any]):
     )
     conn.commit()
     conn.close()
+
 
 def list_chats(search: str = "", category_ids: Optional[List[int]] = None, sort: str = "newest"):
     conn = get_conn()
@@ -104,15 +119,10 @@ def list_chats(search: str = "", category_ids: Optional[List[int]] = None, sort:
     result = []
     for row in rows:
         result.append(
-            {
-                "id": row[0],
-                "title": row[1],
-                "created_at": row[2],
-                "model": row[3],
-                "categories": row[4],
-            }
+            {"id": row[0], "title": row[1], "created_at": row[2], "model": row[3], "categories": row[4]}
         )
     return result
+
 
 def get_chat(chat_id: str):
     conn = get_conn()
@@ -124,21 +134,16 @@ def get_chat(chat_id: str):
         return None
     return {"id": row[0], "title": row[1], "created_at": row[2], "model": row[3], "content": row[4]}
 
-def ensure_category(name: str) -> int:
-    conn = get_conn()
-    conn.execute("INSERT OR IGNORE INTO categories(name) VALUES (?)", (name,))
-    conn.commit()
-    row = conn.execute("SELECT id FROM categories WHERE name = ?", (name,)).fetchone()
-    conn.close()
-    return int(row[0])
 
 def list_categories() -> List[Dict[str, Any]]:
     conn = get_conn()
     rows = conn.execute(
-        "SELECT id, name, (SELECT COUNT(*) FROM chat_categories WHERE category_id = categories.id) as n FROM categories ORDER BY name COLLATE NOCASE ASC"
+        "SELECT id, name, (SELECT COUNT(*) FROM chat_categories WHERE category_id = categories.id) as n "
+        "FROM categories ORDER BY name COLLATE NOCASE ASC"
     ).fetchall()
     conn.close()
     return [{"id": r[0], "name": r[1], "count": r[2]} for r in rows]
+
 
 def assign_categories(chat_ids: List[str], category_names: List[str]):
     if not chat_ids or not category_names:
@@ -163,6 +168,7 @@ def assign_categories(chat_ids: List[str], category_names: List[str]):
     conn.commit()
     conn.close()
 
+
 def remove_categories(chat_ids: List[str], category_names: List[str]):
     if not chat_ids or not category_names:
         return
@@ -178,6 +184,7 @@ def remove_categories(chat_ids: List[str], category_names: List[str]):
             )
     conn.commit()
     conn.close()
+
 
 def export_categorized() -> Dict[str, Any]:
     conn = get_conn()
@@ -206,10 +213,13 @@ def export_categorized() -> Dict[str, Any]:
         "chats": list(chat_map.values()),
     }
 
+
 # ---------- JSON PARSING & MERGE ----------
+
 
 def hash_id(text: str) -> str:
     return hashlib.sha1(text.encode("utf-8")).hexdigest()[:16]
+
 
 def _coerce_datetime(value: Any) -> Optional[str]:
     if value is None:
@@ -226,6 +236,7 @@ def _coerce_datetime(value: Any) -> Optional[str]:
         pass
     return str(value)
 
+
 def normalize_chats(obj: Any) -> List[Dict[str, Any]]:
     if isinstance(obj, dict):
         raw = obj.get("chats") if isinstance(obj.get("chats"), list) else obj.get("items") or [obj]
@@ -237,12 +248,7 @@ def normalize_chats(obj: Any) -> List[Dict[str, Any]]:
     for i, item in enumerate(raw):
         if not isinstance(item, dict):
             continue
-        cid = (
-            str(item.get("id"))
-            or str(item.get("conversation_id"))
-            or str(item.get("uuid"))
-            or ""
-        )
+        cid = str(item.get("id") or item.get("conversation_id") or item.get("uuid") or "")
         title = item.get("title") or item.get("name") or item.get("summary") or f"Chat #{i+1}"
         created = item.get("created_at") or item.get("create_time") or item.get("timestamp") or item.get("date")
         model = item.get("model") or item.get("model_slug") or item.get("engine") or ""
@@ -278,6 +284,7 @@ def normalize_chats(obj: Any) -> List[Dict[str, Any]]:
         )
     return normalized
 
+
 def import_json_file(json_bytes: bytes, merge_mode: str = "additive") -> int:
     try:
         obj = json.loads(json_bytes.decode("utf-8"))
@@ -291,13 +298,17 @@ def import_json_file(json_bytes: bytes, merge_mode: str = "additive") -> int:
             assign_categories([c["id"]], cats)
     return len(chats)
 
+
 # ---------- UI ----------
+
 
 def _tag_badge(name: str):
     st.markdown(
-        f"<span style='display:inline-block;padding:2px 8px;border-radius:999px;border:1px solid #ddd;font-size:12px;margin-right:6px'>{name}</span>",
+        f"<span style='display:inline-block;padding:2px 8px;border-radius:999px;"
+        f"border:1px solid #ddd;font-size:12px;margin-right:6px'>{name}</span>",
         unsafe_allow_html=True,
     )
+
 
 def _chat_row(chat: Dict[str, Any], key_prefix: str):
     cols = st.columns([0.06, 0.44, 0.22, 0.28])
@@ -318,19 +329,36 @@ def _chat_row(chat: Dict[str, Any], key_prefix: str):
     with cols[3]:
         with st.expander("Preview"):
             details = get_chat(chat["id"])
-            st.text_area("Content", details.get("content") if details else "", height=160, label_visibility="collapsed")
+            st.text_area(
+                "Content",
+                details.get("content") if details else "",
+                height=160,
+                label_visibility="collapsed",
+            )
     return checked
 
-def main():
-    st.set_page_config(page_title="Chat Categorizer", layout="wide")
-    st.title("📁 Chat Categorizer")
-    st.caption("Import raw or previously categorized JSON, keep working, and export back — additive merge, local-only.")
+
+def main(go_home: Callable[[], None] | None = None):
+    # Header + Back button
+    top_left, top_right = st.columns([0.8, 0.2])
+    with top_left:
+        st.title("📁 InboxGPT")
+        st.caption("Import ChatGPT exports, categorize conversations, and export back — local-only.")
+    with top_right:
+        if go_home is not None:
+            if st.button("← Back to Home", use_container_width=True):
+                go_home()
 
     init_db()
 
     with st.sidebar:
         st.subheader("Import / Export")
-        file = st.file_uploader("Import chat JSON (raw or messages.json)", type=["json"], accept_multiple_files=False)
+
+        file = st.file_uploader(
+            "Import chat JSON (raw export / conversations.json / previously categorized)",
+            type=["json"],
+            accept_multiple_files=False,
+        )
         if file is not None:
             n = import_json_file(file.getvalue(), merge_mode="additive")
             st.success(f"Merged {n} chats from JSON. Categories present in the file were added (no removals).")
@@ -345,7 +373,7 @@ def main():
                 mime="application/json",
             )
 
-        st.caption("DB: chat_categorizer.db • Export includes schema_version + exported_at")
+        st.caption(f"DB: {Path(DB_PATH).name} • Export includes schema_version + exported_at")
 
     c1, c2, c3, c4 = st.columns([0.35, 0.25, 0.2, 0.2])
     with c1:
@@ -353,34 +381,44 @@ def main():
     with c2:
         all_cats = list_categories()
         cat_name_to_id = {c["name"]: c["id"] for c in all_cats}
-        cat_filter_names = st.multiselect("Filter by category (must match all)", options=[c["name"] for c in all_cats])
+        cat_filter_names = st.multiselect(
+            "Filter by category (must match all)",
+            options=[c["name"] for c in all_cats],
+        )
         cat_filter_ids = [cat_name_to_id[name] for name in cat_filter_names] if cat_filter_names else None
     with c3:
         sort = st.selectbox("Sort", ["newest", "oldest", "title A→Z"])
     with c4:
         page_size = st.selectbox("Page size", [10, 20, 50, 100], index=1)
 
-    chats = list_chats(search=search, category_ids=cat_filter_ids, sort={"newest":"newest","oldest":"oldest","title A→Z":"title"}[sort])
+    chats = list_chats(
+        search=search,
+        category_ids=cat_filter_ids,
+        sort={"newest": "newest", "oldest": "oldest", "title A→Z": "title"}[sort],
+    )
 
     total = len(chats)
     if "page" not in st.session_state:
         st.session_state.page = 0
-    max_page = max(0, (total - 1)//page_size)
+    max_page = max(0, (total - 1) // page_size)
+
     nav1, nav2, nav3 = st.columns([0.15, 0.7, 0.15])
     with nav1:
         if st.button("⟵ Prev", disabled=(st.session_state.page <= 0)):
             st.session_state.page = max(0, st.session_state.page - 1)
+            st.rerun()
     with nav2:
         st.write(f"Page {st.session_state.page + 1} / {max_page + 1} • {total} chats")
     with nav3:
         if st.button("Next ⟶", disabled=(st.session_state.page >= max_page)):
             st.session_state.page = min(max_page, st.session_state.page + 1)
+            st.rerun()
 
     start = st.session_state.page * page_size
     end = start + page_size
     visible = chats[start:end]
 
-    st.markdown("#### Inbox")
+    st.markdown("#### Conversations")
     header = st.columns([0.06, 0.44, 0.22, 0.28])
     header[0].markdown("**✓**")
     header[1].markdown("**Title / Date**")
@@ -393,10 +431,11 @@ def main():
             selected_ids.append(chat["id"])
 
     st.markdown("---")
-
     st.markdown("### Categorize Selected")
+
     cat_left, cat_right = st.columns([0.6, 0.4])
     with cat_left:
+        all_cats = list_categories()  # refresh counts/options
         new_cat = st.text_input("Create new category (or reuse existing)", placeholder="e.g., Writing, Health, Coding")
         assign_existing = st.multiselect("Or assign existing categories", options=[c["name"] for c in all_cats])
         if st.button("Assign to selected"):
@@ -406,17 +445,24 @@ def main():
             names += assign_existing
             assign_categories(selected_ids, names)
             st.success(f"Assigned {', '.join(names)} to {len(selected_ids)} chat(s).")
+            st.rerun()
+
     with cat_right:
+        all_cats = list_categories()
         remove_existing = st.multiselect("Remove categories from selected", options=[c["name"] for c in all_cats])
         if st.button("Remove from selected"):
             remove_categories(selected_ids, remove_existing)
             st.warning(f"Removed {', '.join(remove_existing)} from {len(selected_ids)} chat(s).")
+            st.rerun()
 
     st.markdown("### Category Summary")
+    cats = list_categories()
     cols = st.columns(4)
-    for i, cat in enumerate(list_categories()):
+    for i, cat in enumerate(cats):
         with cols[i % 4]:
             st.metric(cat["name"], f"{cat['count']} chats")
 
+
 if __name__ == "__main__":
-    main()
+    # Allows running this module directly too:
+    main(go_home=None)
