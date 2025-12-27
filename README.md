@@ -28,7 +28,7 @@ Modern platforms will happily give you “your data” — but what you get back
 
 There is **no upload**, **no cloud**, and **no tracking**.  
 If your data feels too personal to hand to a web app, this toolkit is for you.
-
+<img src="https://raw.githubusercontent.com/monapdx/data-distillery/refs/heads/main/data-distillery-main.png">
 ---
 
 ## What’s included
