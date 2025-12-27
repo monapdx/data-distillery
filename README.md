@@ -36,11 +36,14 @@ If your data feels too personal to hand to a web app, this toolkit is for you.
 Data Distillery is a **suite**, not a single app. Current tools include:
 
 ### Inbox Archeology
+<img src="https://raw.githubusercontent.com/monapdx/data-distillery/refs/heads/main/inbox-archeology.png">
 Analyze a Gmail Takeout `.mbox` file to explore:
 
 - long-term email relationships
 - frequency and balance of communication
 - timeline patterns across years
+
+<img src="https://raw.githubusercontent.com/monapdx/data-distillery/refs/heads/main/inbox-archeology-results.png">
 
 ### Search History Analyzer
 Explore Google Search history exports to see:
@@ -50,6 +53,7 @@ Explore Google Search history exports to see:
 - long-term patterns you don’t notice day-to-day
 
 ### InboxGPT / Chat tools
+<img src="https://raw.githubusercontent.com/monapdx/data-distillery/refs/heads/main/inbox-GPT.png">
 Explore ChatGPT conversation exports and chat logs in a structured way:
 
 - browse conversations
