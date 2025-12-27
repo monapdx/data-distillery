@@ -12,12 +12,16 @@ if str(PROJECT_ROOT) not in sys.path:
 
 st.set_page_config(page_title="Data Distillery – Home", layout="wide")
 
+# Mark that we are running inside the Data Distillery suite router
+st.session_state["_dd_suite"] = True
+
 # ----------------------------
 # Navigation (Option B Router)
 # ----------------------------
 PAGE_HOME = "home"
 PAGE_INBOX_ARCH = "inbox_archeology"
 PAGE_INBOXGPT = "inboxgpt"
+PAGE_INBOX_DASH = "inbox_dashboard"
 
 if "dd_page" not in st.session_state:
     st.session_state.dd_page = PAGE_HOME
@@ -86,6 +90,13 @@ def render_inboxgpt():
     inboxGPT_app.main(go_home=lambda: go(PAGE_HOME))
 
 
+def render_inbox_dashboard():
+    """Embedded Inbox Archeology dashboard (auto-opens after a run)."""
+    # Import lazily so the module doesn't run at import time
+    from inbox_archeology.scripts import inbox_dashboard
+    inbox_dashboard.main(go_home=lambda: go(PAGE_HOME))
+
+
 # ----------------------------
 # Router
 # ----------------------------
@@ -97,6 +108,8 @@ elif page == PAGE_INBOX_ARCH:
     render_inbox_archeology()
 elif page == PAGE_INBOXGPT:
     render_inboxgpt()
+elif page == PAGE_INBOX_DASH:
+    render_inbox_dashboard()
 else:
     # Fallback
     st.session_state.dd_page = PAGE_HOME
