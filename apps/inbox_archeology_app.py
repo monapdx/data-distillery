@@ -78,6 +78,12 @@ def main(go_home: Callable[[], None] | None = None):
             help="If off, you can delete the workspace manually after reviewing outputs.",
         )
 
+        open_dashboard = st.toggle(
+            "Open dashboard automatically when finished",
+            value=True,
+            help="After the pipeline completes, jump straight into the interactive dashboard.",
+        )
+
         st.divider()
         st.markdown("### Input folder")
         st.write("Drop your Gmail Takeout `.mbox` file here:")
@@ -186,6 +192,17 @@ Then click **Refresh list**.
         progress_bar.progress(100)
         status.success("Pipeline complete")
 
+        # Hand-off to the dashboard page (suite router)
+        try:
+            if open_dashboard:
+                out_dir = Path(outputs.get("out_dir", workspace_dir / "output")).resolve()
+                st.session_state.dd_inbox_arch_out_dir = str(out_dir)
+                st.session_state.dd_page = "inbox_dashboard"
+                st.rerun()
+        except Exception:
+            # If anything goes wrong, we still show the manual next-steps below.
+            pass
+
         st.header("Results")
         st.markdown(
             f"""
@@ -201,9 +218,12 @@ inbox_archeology/workspaces/{run_name}/output/
             for k, v in outputs.items():
                 st.write(f"**{k}** → {v}")
 
+        out_dir = workspace_dir / "output"
         st.subheader("Explore in dashboard")
-        st.write("Open the dashboard with:")
-        st.code("streamlit run inbox_archeology/scripts/inbox_dashboard.py", language="bash")
+        if st.button("Open dashboard now", use_container_width=True):
+            st.session_state.dd_inbox_arch_out_dir = str(out_dir)
+            st.session_state.dd_page = "inbox_dashboard"
+            st.rerun()
 
         if not keep_workspace:
             st.warning(
