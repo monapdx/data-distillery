@@ -67,6 +67,8 @@ Standalone viewers that run directly in your browser:
 - no installation
 - useful as quick inspection tools
 
+Streamlit demo: https://data-distillery-mktdkqpgjmocqjkc9uou55.streamlit.app/
+
 ---
 
 ## What you need before starting
